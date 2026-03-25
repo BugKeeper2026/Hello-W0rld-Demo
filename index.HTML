@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>藝境畫廊 | Art Gallery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --bg-alt: #151515;
+      --fg: #f5f0e8;
+      --muted: #7a7a7a;
+      --accent: #c9a962;
+      --accent-dark: #a88a4a;
+      --card: #1a1a1a;
+      --border: #2a2a2a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .font-serif {
+      font-family: 'Noto Serif TC', serif;
+    }
+
+    /* Navigation */
+    .nav-link {
+      position: relative;
+      padding: 0.5rem 0;
+      color: var(--muted);
+      transition: color 0.2s ease;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: inherit;
+      font-family: inherit;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--fg);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background-color: var(--accent);
+      transition: width 0.2s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    /* Language Toggle */
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      border: 1px solid var(--border);
+      background-color: transparent;
+      color: var(--muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .lang-toggle:hover {
+      border-color: var(--accent);
+      color: var(--fg);
+    }
+
+    .lang-toggle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .lang-toggle.active-lang {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Button */
+    .btn-primary {
+      background-color: var(--accent);
+      color: var(--bg);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-dark);
+    }
+
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Page transitions */
+    .page {
+      display: none;
+      opacity: 0;
+    }
+
+    .page.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Card hover */
+    .artwork-card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      transition: border-color 0.2s ease;
+    }
+
+    .artwork-card:hover {
+      border-color: var(--accent);
+    }
+
+    .artwork-card img {
+      transition: transform 0.3s ease;
+    }
+
+    .artwork-card:hover img {
+      transform: scale(1.02);
+    }
+
+    /* Review card */
+    .review-card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+    }
+
+    /* Feature card */
+    .feature-card {
+      background-color: var(--bg-alt);
+      border: 1px solid var(--border);
+    }
+
+    /* Map container */
+    .map-container {
+      border: 1px solid var(--border);
+    }
+
+    /* Focus visible */
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Image placeholder */
+    .img-placeholder {
+      background: linear-gradient(135deg, var(--border) 0%, var(--card) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="fixed top-0 left-0 right-0 z-50" style="background-color: rgba(15, 15, 15, 0.95); backdrop-filter: blur(8px);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <!-- Logo -->
+        <a href="#" class="font-serif text-xl sm:text-2xl font-semibold tracking-wide" style="color: var(--fg);" data-i18n="logo">
+          藝境畫廊
+        </a>
+        
+        <!-- Navigation -->
+        <div class="flex items-center gap-4 sm:gap-8">
+          <nav class="flex items-center gap-6 sm:gap-10" role="navigation" aria-label="主要導航">
+            <button class="nav-link active" data-page="home" aria-current="page" data-i18n="nav.home">首頁</button>
+            <button class="nav-link" data-page="popular" data-i18n="nav.popular">熱門</button>
+            <button class="nav-link" data-page="all" data-i18n="nav.all">所有</button>
+          </nav>
+          
+          <!-- Language Toggle -->
+          <div class="flex items-center" role="group" aria-label="語言切換">
+            <button class="lang-toggle active-lang" data-lang="zh" style="border-radius: 4px 0 0 4px;">中文</button>
+            <button class="lang-toggle" data-lang="en" style="border-radius: 0 4px 4px 0; border-left: none;">EN</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-16 sm:pt-20">
+    <!-- ========== HOME PAGE ========== -->
+    <div id="page-home" class="page active">
+      <!-- Banner Section -->
+      <section class="relative h-[60vh] sm:h-[70vh] overflow-hidden">
+        <!-- Banner背景圖片位置 -->
+        <!-- 建議圖片尺寸: 1920x1080 或更大，主題: 畫廊空間或藝術作品集錦 -->
+        <div class="absolute inset-0 img-placeholder">
+          <img src="Image/YOUR_BANNER_IMAGE.jpg" alt="畫廊Banner" class="w-full h-full object-cover"> <!-- 註解起來就不會使用圖片來源 -->
+          <!-- <span data-i18n="placeholder.banner">Banner 背景圖片位置 (1920x1080)</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+        </div>
+        <div class="absolute inset-0" style="background: linear-gradient(to top, var(--bg) 0%, rgba(15,15,15,0.6) 50%, rgba(15,15,15,0.3) 100%);"></div>
+        
+        <div class="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-end pb-12 sm:pb-16">
+          <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold mb-4" style="color: var(--fg);" data-i18n="home.banner.title">
+            探索藝術的無限可能
+          </h1>
+          <p class="text-lg sm:text-xl max-w-2xl mb-6" style="color: var(--muted);" data-i18n="home.banner.subtitle">
+            藝境畫廊匯集當代傑出藝術家的心血之作，為您呈現跨越時空的視覺盛宴
+          </p>
+          <a href="#contact" class="btn-primary inline-block w-fit" data-i18n="home.banner.cta">聯絡我們</a>
+        </div>
+      </section>
+
+      <!-- Why Choose Us Section -->
+      <section class="py-16 sm:py-24" style="background-color: var(--bg-alt);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12 sm:mb-16">
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold mb-4" data-i18n="home.why.title">為何選擇我們</h2>
+            <p style="color: var(--muted);" class="max-w-2xl mx-auto" data-i18n="home.why.subtitle">
+              我們致力於為藝術愛好者提供最優質的觀展體驗
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="feature-card p-6 sm:p-8">
+              <div class="w-12 h-12 mb-4 flex items-center justify-center" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <h3 class="font-serif text-lg font-semibold mb-2" data-i18n="home.why.feature1.title">精選作品</h3>
+              <p class="text-sm" style="color: var(--muted);" data-i18n="home.why.feature1.desc">
+                每件作品都經過專業策展團隊嚴格篩選，確保藝術價值與收藏潛力
+              </p>
+            </div>
+            
+            <div class="feature-card p-6 sm:p-8">
+              <div class="w-12 h-12 mb-4 flex items-center justify-center" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <h3 class="font-serif text-lg font-semibold mb-2" data-i18n="home.why.feature2.title">專業導覽</h3>
+              <p class="text-sm" style="color: var(--muted);" data-i18n="home.why.feature2.desc">
+                提供專業藝術導覽服務，深入解讀每件作品背後的創作理念與故事
+              </p>
+            </div>
+            
+            <div class="feature-card p-6 sm:p-8">
+              <div class="w-12 h-12 mb-4 flex items-center justify-center" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <h3 class="font-serif text-lg font-semibold mb-2" data-i18n="home.why.feature3.title">私人訂製</h3>
+              <p class="text-sm" style="color: var(--muted);" data-i18n="home.why.feature3.desc">
+                為藏家提供個性化收藏建議，協助建立獨特的藝術收藏體系
+              </p>
+            </div>
+            
+            <div class="feature-card p-6 sm:p-8">
+              <div class="w-12 h-12 mb-4 flex items-center justify-center" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="9" y1="21" x2="9" y2="9"/>
+                </svg>
+              </div>
+              <h3 class="font-serif text-lg font-semibold mb-2" data-i18n="home.why.feature4.title">展覽空間</h3>
+              <p class="text-sm" style="color: var(--muted);" data-i18n="home.why.feature4.desc">
+                專業展覽空間設計，以最佳光線與動線呈現每件藝術作品
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact & Map Section -->
+      <section id="contact" class="py-16 sm:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12 sm:mb-16">
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold mb-4" data-i18n="home.contact.title">聯絡資訊</h2>
+            <p style="color: var(--muted);" data-i18n="home.contact.subtitle">歡迎親臨畫廊或與我們聯絡</p>
+          </div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <!-- Contact Info -->
+            <div class="space-y-8">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 flex items-center justify-center flex-shrink-0" style="color: var(--accent);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold mb-1" data-i18n="home.contact.address.label">地址</h3>
+                  <p style="color: var(--muted);" data-i18n="home.contact.address.value">台北市大安區敦化南路一段236號</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 flex items-center justify-center flex-shrink-0" style="color: var(--accent);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold mb-1" data-i18n="home.contact.phone.label">電話</h3>
+                  <p style="color: var(--muted);">+886 2 2752 3888</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 flex items-center justify-center flex-shrink-0" style="color: var(--accent);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold mb-1" data-i18n="home.contact.email.label">電子信箱</h3>
+                  <p style="color: var(--muted);">info@artgallery.com</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 flex items-center justify-center flex-shrink-0" style="color: var(--accent);">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold mb-1" data-i18n="home.contact.hours.label">營業時間</h3>
+                  <p style="color: var(--muted);" data-i18n="home.contact.hours.value">週二至週日 10:00 - 18:00<br>週一休館</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Google Map -->
+            <div class="map-container h-80 sm:h-96 overflow-hidden">
+              <!-- Google Map 嵌入 - 可替換為實際地址的嵌入代碼 -->
+              <!-- 建議使用 Google Maps Embed API，將下方 src 更換為您的實際地址 -->
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3614.703896025467!2d121.54755931500873!3d25.041097983973!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442abcd6c123456%3A0x1234567890abcdef!2sExample%20Location!5e0!3m2!1szh-TW!2stw!4v1234567890123"
+                width="100%" 
+                height="100%" 
+                style="border:0; filter: grayscale(80%) contrast(1.1);" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade"
+                data-i18n-title="map.title"
+                title="畫廊位置地圖">
+              </iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reviews Section -->
+      <section class="py-16 sm:py-24" style="background-color: var(--bg-alt);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12 sm:mb-16">
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold mb-4" data-i18n="home.reviews.title">訪客回饋</h2>
+            <p style="color: var(--muted);" data-i18n="home.reviews.subtitle">聽聽其他藝術愛好者怎麼說</p>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Review 1 -->
+            <div class="review-card p-6">
+              <div class="flex items-center gap-1 mb-4" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <p class="mb-4 text-sm" style="color: var(--muted);" data-i18n="home.reviews.review1.text">
+                「空間設計非常有質感，策展理念清晰。導覽人員專業且熱情，讓我對當代藝術有了全新的認識。強烈推薦給藝術愛好者！」
+              </p>
+              <!-- 用戶頭像圖片位置 -->
+              <!-- 建議尺寸: 48x48 圓形裁切 -->
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden img-placeholder flex-shrink-0">
+                  <img src="Image/USER_AVATAR_1.jpg" alt="用戶頭像" class="w-full h-full object-cover"> <!-- 註解起來就不會使用圖片來源 -->
+                  <!-- <span class="text-xs" data-i18n="placeholder.avatar">頭像</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+                </div>
+                <div>
+                  <p class="font-medium text-sm" data-i18n="home.reviews.review1.name">林雅婷</p>
+                  <p class="text-xs" style="color: var(--muted);" data-i18n="home.reviews.review1.role">藝術收藏家</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Review 2 -->
+            <div class="review-card p-6">
+              <div class="flex items-center gap-1 mb-4" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <p class="mb-4 text-sm" style="color: var(--muted);" data-i18n="home.reviews.review2.text">
+                「每月的新展都令人期待，作品選擇眼光獨到。畫廊氛圍安靜舒適，是放鬆心情、欣賞藝術的絕佳去處。」
+              </p>
+              <!-- 用戶頭像圖片位置 -->
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden img-placeholder flex-shrink-0">
+                  <img src="Image/USER_AVATAR_2.jpg" alt="用戶頭像" class="w-full h-full object-cover"> <!-- 註解起來就不會使用圖片來源 -->
+                  <!-- <span class="text-xs" data-i18n="placeholder.avatar">頭像</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+                </div>
+                <div>
+                  <p class="font-medium text-sm" data-i18n="home.reviews.review2.name">陳偉明</p>
+                  <p class="text-xs" style="color: var(--muted);" data-i18n="home.reviews.review2.role">設計師</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Review 3 -->
+            <div class="review-card p-6">
+              <div class="flex items-center gap-1 mb-4" style="color: var(--accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <p class="mb-4 text-sm" style="color: var(--muted);" data-i18n="home.reviews.review3.text">
+                「第一次來就被深深吸引，作品的陳列方式很有巧思。在這裡買到了心儀已久的畫作，感謝畫廊的專業建議！」
+              </p>
+              <!-- 用戶頭像圖片位置 -->
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden img-placeholder flex-shrink-0">
+                  <img src="Image/USER_AVATAR_3.jpg" alt="用戶頭像" class="w-full h-full object-cover"> <!-- 註解起來就不會使用圖片來源 -->
+                  <!-- <span class="text-xs" data-i18n="placeholder.avatar">頭像</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+                </div>
+                <div>
+                  <p class="font-medium text-sm" data-i18n="home.reviews.review3.name">王美玲</p>
+                  <p class="text-xs" style="color: var(--muted);" data-i18n="home.reviews.review3.role">室內設計師</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========== POPULAR PAGE ========== -->
+    <div id="page-popular" class="page">
+      <section class="py-16 sm:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12 sm:mb-16">
+            <h1 class="font-serif text-3xl sm:text-4xl font-bold mb-4" data-i18n="popular.title">熱門作品</h1>
+            <p style="color: var(--muted);" data-i18n="popular.subtitle">精選最受觀眾喜愛的四件作品</p>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <!-- Popular Artwork 1 -->
+            <article class="artwork-card overflow-hidden">
+              <!-- 熱門作品圖片位置 1 -->
+              <!-- 建議尺寸: 800x600 或 4:3 比例 -->
+              <div class="aspect-[4/3] img-placeholder overflow-hidden">
+                <img src="Image/POPULAR_ARTWORK_1.jpg" alt="晨曦微光" class="w-full h-full object-cover">
+                <!-- <span data-i18n="placeholder.popularImg">熱門作品圖片 1 (800x600)</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+              </div>
+              <div class="p-6">
+                <h3 class="font-serif text-xl font-semibold mb-2" data-i18n="popular.artwork1.title">晨曦微光</h3>
+                <p class="text-sm mb-3" style="color: var(--muted);" data-i18n="popular.artwork1.info">
+                  藝術家：李明輝 | 油畫 | 120 x 90 cm | 2023
+                </p>
+                <p class="text-sm" style="color: var(--muted);" data-i18n="popular.artwork1.desc">
+                  以細膩的筆觸捕捉黎明時分的柔和光線，展現自然界最溫柔的瞬間。畫面中的薄霧與初升的陽光交織，營造出寧靜祥和的氛圍。
+                </p>
+              </div>
+            </article>
+            
+            <!-- Popular Artwork 2 -->
+            <article class="artwork-card overflow-hidden">
+              <!-- 熱門作品圖片位置 2 -->
+              <div class="aspect-[4/3] img-placeholder overflow-hidden">
+                <img src="Image/POPULAR_ARTWORK_2.jpg" alt="城市脈動" class="w-full h-full object-cover">
+                <!-- <span data-i18n="placeholder.popularImg">熱門作品圖片 2 (800x600)</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+              </div>
+              <div class="p-6">
+                <h3 class="font-serif text-xl font-semibold mb-2" data-i18n="popular.artwork2.title">城市脈動</h3>
+                <p class="text-sm mb-3" style="color: var(--muted);" data-i18n="popular.artwork2.info">
+                  藝術家：張雅芳 | 壓克力 | 150 x 100 cm | 2024
+                </p>
+                <p class="text-sm" style="color: var(--muted);" data-i18n="popular.artwork2.desc">
+                  運用大膽的色彩與幾何線條，詮釋現代都市的生命力與節奏感。作品融合東西方美學，展現都市人的忙碌與追求。
+                </p>
+              </div>
+            </article>
+            
+            <!-- Popular Artwork 3 -->
+            <article class="artwork-card overflow-hidden">
+              <!-- 熱門作品圖片位置 3 -->
+              <div class="aspect-[4/3] img-placeholder overflow-hidden">
+                <img src="Image/POPULAR_ARTWORK_3.jpg" alt="靜謐山林" class="w-full h-full object-cover">
+                <!-- <span data-i18n="placeholder.popularImg">熱門作品圖片 3 (800x600)</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+              </div>
+              <div class="p-6">
+                <h3 class="font-serif text-xl font-semibold mb-2" data-i18n="popular.artwork3.title">靜謐山林</h3>
+                <p class="text-sm mb-3" style="color: var(--muted);" data-i18n="popular.artwork3.info">
+                  藝術家：陳志遠 | 水墨 | 90 x 180 cm | 2023
+                </p>
+                <p class="text-sm" style="color: var(--muted);" data-i18n="popular.artwork3.desc">
+                  傳統水墨技法與當代審美的完美結合，描繪台灣中央山脈的壯闊景色。留白處恰到好處，讓觀者在虛實之間遊走。
+                </p>
+              </div>
+            </article>
+            
+            <!-- Popular Artwork 4 -->
+            <article class="artwork-card overflow-hidden">
+              <!-- 熱門作品圖片位置 4 -->
+              <div class="aspect-[4/3] img-placeholder overflow-hidden">
+                <img src="Image/POPULAR_ARTWORK_4.jpg" alt="時光碎片" class="w-full h-full object-cover">
+                <!-- <span data-i18n="placeholder.popularImg">熱門作品圖片 4 (800x600)</span> --> <!-- 不註解起來就會顯示佔位文字 -->
+              </div>
+              <div class="p-6">
+                <h3 class="font-serif text-xl font-semibold mb-2" data-i18n="popular.artwork4.title">時光碎片</h3>
+                <p class="text-sm mb-3" style="color: var(--muted);" data-i18n="popular.artwork4.info">
+                  藝術家：林詩涵 | 複合媒材 | 80 x 80 cm | 2024
+                </p>
+                <p class="text-sm" style="color: var(--muted);" data-i18n="popular.artwork4.desc">
+                  將記憶中的片段重新拼湊，以抽象手法呈現時間的流逝與沉澱。材質的疊加創造豐富的層次感，引人無限遐想。
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========== ALL WORKS PAGE ========== -->
+    <div id="page-all" class="page">
+      <section class="py-16 sm:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12 sm:mb-16">
+            <h1 class="font-serif text-3xl sm:text-4xl font-bold mb-4" data-i18n="all.title">所有作品</h1>
+            <p style="color: var(--muted);" data-i18n="all.subtitle">瀏覽畫廊中的全部藝術收藏</p>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="all-artworks-grid">
+            <!-- Artworks will be rendered by JavaScript -->
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer style="background-color: var(--bg-alt); border-top: 1px solid var(--border);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="font-serif text-lg" style="color: var(--fg);" data-i18n="logo">藝境畫廊</p>
+        <p class="text-sm" style="color: var(--muted);" data-i18n="footer.copyright">
+          &copy; 2026 藝境畫廊。保留所有權利。
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ========== 語言數據 ==========
+    var translations = {
+      zh: {
+        logo: '藝境畫廊',
+        'nav.home': '首頁',
+        'nav.popular': '熱門',
+        'nav.all': '所有',
+        'placeholder.banner': 'Banner 背景圖片位置 (1920x1080)',
+        'placeholder.avatar': '頭像',
+        'placeholder.popularImg': '熱門作品圖片',
+        'placeholder.artworkImg': '作品圖片',
+        'map.title': '畫廊位置地圖',
+        'home.banner.title': '探索藝術的無限可能',
+        'home.banner.subtitle': '藝境畫廊匯集當代傑出藝術家的心血之作，為您呈現跨越時空的視覺盛宴',
+        'home.banner.cta': '聯絡我們',
+        'home.why.title': '為何選擇我們',
+        'home.why.subtitle': '我們致力於為藝術愛好者提供最優質的觀展體驗',
+        'home.why.feature1.title': '精選作品',
+        'home.why.feature1.desc': '每件作品都經過專業策展團隊嚴格篩選，確保藝術價值與收藏潛力',
+        'home.why.feature2.title': '專業導覽',
+        'home.why.feature2.desc': '提供專業藝術導覽服務，深入解讀每件作品背後的創作理念與故事',
+        'home.why.feature3.title': '私人訂製',
+        'home.why.feature3.desc': '為藏家提供個性化收藏建議，協助建立獨特的藝術收藏體系',
+        'home.why.feature4.title': '展覽空間',
+        'home.why.feature4.desc': '專業展覽空間設計，以最佳光線與動線呈現每件藝術作品',
+        'home.contact.title': '聯絡資訊',
+        'home.contact.subtitle': '歡迎親臨畫廊或與我們聯絡',
+        'home.contact.address.label': '地址',
+        'home.contact.address.value': '台北市大安區敦化南路一段236號',
+        'home.contact.phone.label': '電話',
+        'home.contact.email.label': '電子信箱',
+        'home.contact.hours.label': '營業時間',
+        'home.contact.hours.value': '週二至週日 10:00 - 18:00<br>週一休館',
+        'home.reviews.title': '訪客回饋',
+        'home.reviews.subtitle': '聽聽其他藝術愛好者怎麼說',
+        'home.reviews.review1.text': '「空間設計非常有質感，策展理念清晰。導覽人員專業且熱情，讓我對當代藝術有了全新的認識。強烈推薦給藝術愛好者！」',
+        'home.reviews.review1.name': '林雅婷',
+        'home.reviews.review1.role': '藝術收藏家',
+        'home.reviews.review2.text': '「每月的新展都令人期待，作品選擇眼光獨到。畫廊氛圍安靜舒適，是放鬆心情、欣賞藝術的絕佳去處。」',
+        'home.reviews.review2.name': '陳偉明',
+        'home.reviews.review2.role': '設計師',
+        'home.reviews.review3.text': '「第一次來就被深深吸引，作品的陳列方式很有巧思。在這裡買到了心儀已久的畫作，感謝畫廊的專業建議！」',
+        'home.reviews.review3.name': '王美玲',
+        'home.reviews.review3.role': '室內設計師',
+        'popular.title': '熱門作品',
+        'popular.subtitle': '精選最受觀眾喜愛的四件作品',
+        'popular.artwork1.title': '晨曦微光',
+        'popular.artwork1.info': '藝術家：李明輝 | 油畫 | 120 x 90 cm | 2023',
+        'popular.artwork1.desc': '以細膩的筆觸捕捉黎明時分的柔和光線，展現自然界最溫柔的瞬間。畫面中的薄霧與初升的陽光交織，營造出寧靜祥和的氛圍。',
+        'popular.artwork2.title': '城市脈動',
+        'popular.artwork2.info': '藝術家：張雅芳 | 壓克力 | 150 x 100 cm | 2024',
+        'popular.artwork2.desc': '運用大膽的色彩與幾何線條，詮釋現代都市的生命力與節奏感。作品融合東西方美學，展現都市人的忙碌與追求。',
+        'popular.artwork3.title': '靜謐山林',
+        'popular.artwork3.info': '藝術家：陳志遠 | 水墨 | 90 x 180 cm | 2023',
+        'popular.artwork3.desc': '傳統水墨技法與當代審美的完美結合，描繪台灣中央山脈的壯闊景色。留白處恰到好處，讓觀者在虛實之間遊走。',
+        'popular.artwork4.title': '時光碎片',
+        'popular.artwork4.info': '藝術家：林詩涵 | 複合媒材 | 80 x 80 cm | 2024',
+        'popular.artwork4.desc': '將記憶中的片段重新拼湊，以抽象手法呈現時間的流逝與沉澱。材質的疊加創造豐富的層次感，引人無限遐想。',
+        'all.title': '所有作品',
+        'all.subtitle': '瀏覽畫廊中的全部藝術收藏',
+        'footer.copyright': '© 2026 藝境畫廊。保留所有權利。',
+        // 所有作品
+        artworks: [
+          { title: '晨曦微光', artist: '李明輝', medium: '油畫', year: '2023' },
+          { title: '城市脈動', artist: '張雅芳', medium: '壓克力', year: '2024' },
+          { title: '靜謐山林', artist: '陳志遠', medium: '水墨', year: '2023' },
+          { title: '時光碎片', artist: '林詩涵', medium: '複合媒材', year: '2024' },
+          { title: '海的呢喃', artist: '黃海韻', medium: '油畫', year: '2024' },
+          { title: '金屬記憶', artist: '王建國', medium: '雕塑', year: '2023' },
+          { title: '花開時節', artist: '周美玉', medium: '膠彩', year: '2024' },
+          { title: '夜之序曲', artist: '鄭文豪', medium: '油畫', year: '2023' },
+          { title: '抽象構成', artist: '吳秀蘭', medium: '壓克力', year: '2024' },
+          { title: '雨後初晴', artist: '趙子龍', medium: '水彩', year: '2023' },
+          { title: '歲月痕跡', artist: '孫明月', medium: '攝影', year: '2024' },
+          { title: '自由飛翔', artist: '劉小燕', medium: '版畫', year: '2023' }
+        ]
+      },
+      en: {
+        logo: 'Art Realm Gallery',
+        'nav.home': 'Home',
+        'nav.popular': 'Popular',
+        'nav.all': 'All',
+        'placeholder.banner': 'Banner Image Position (1920x1080)',
+        'placeholder.avatar': 'Avatar',
+        'placeholder.popularImg': 'Popular Artwork Image',
+        'placeholder.artworkImg': 'Artwork Image',
+        'map.title': 'Gallery Location Map',
+        'home.banner.title': 'Explore the Infinite Possibilities of Art',
+        'home.banner.subtitle': 'Art Realm Gallery presents masterpieces by outstanding contemporary artists, offering you a visual feast that transcends time and space',
+        'home.banner.cta': 'Contact Us',
+        'home.why.title': 'Why Choose Us',
+        'home.why.subtitle': 'We are dedicated to providing art enthusiasts with the finest exhibition experience',
+        'home.why.feature1.title': 'Curated Works',
+        'home.why.feature1.desc': 'Each piece is carefully selected by our professional curatorial team to ensure artistic value and collection potential',
+        'home.why.feature2.title': 'Professional Tours',
+        'home.why.feature2.desc': 'Professional art tour services provide in-depth interpretation of the creative concepts and stories behind each work',
+        'home.why.feature3.title': 'Personalized Service',
+        'home.why.feature3.desc': 'Personalized collection advice for collectors, helping build a unique art collection system',
+        'home.why.feature4.title': 'Exhibition Space',
+        'home.why.feature4.desc': 'Professional exhibition space design presenting each artwork with optimal lighting and circulation',
+        'home.contact.title': 'Contact Information',
+        'home.contact.subtitle': 'Welcome to visit our gallery or contact us',
+        'home.contact.address.label': 'Address',
+        'home.contact.address.value': 'No. 236, Section 1, Dunhua South Road, Da\'an District, Taipei City',
+        'home.contact.phone.label': 'Phone',
+        'home.contact.email.label': 'Email',
+        'home.contact.hours.label': 'Opening Hours',
+        'home.contact.hours.value': 'Tuesday - Sunday 10:00 - 18:00<br>Closed on Monday',
+        'home.reviews.title': 'Visitor Feedback',
+        'home.reviews.subtitle': 'Hear what other art enthusiasts have to say',
+        'home.reviews.review1.text': '"The space design is exquisite, and the curatorial concept is clear. The tour guides are professional and enthusiastic, giving me a whole new understanding of contemporary art. Highly recommended for art lovers!"',
+        'home.reviews.review1.name': 'Lin Ya-ting',
+        'home.reviews.review1.role': 'Art Collector',
+        'home.reviews.review2.text': '"Every new exhibition is worth looking forward to, with unique work selection. The gallery atmosphere is quiet and comfortable - an excellent place to relax and appreciate art."',
+        'home.reviews.review2.name': 'Chen Wei-ming',
+        'home.reviews.review2.role': 'Designer',
+        'home.reviews.review3.text': '"I was deeply attracted from my first visit. The way the works are displayed is ingenious. I found the painting I had been longing for here, thanks to the gallery\'s professional advice!"',
+        'home.reviews.review3.name': 'Wang Mei-ling',
+        'home.reviews.review3.role': 'Interior Designer',
+        'popular.title': 'Popular Works',
+        'popular.subtitle': 'Four most beloved works selected by our audience',
+        'popular.artwork1.title': 'Morning Light',
+        'popular.artwork1.info': 'Artist: Li Ming-hui | Oil | 120 x 90 cm | 2023',
+        'popular.artwork1.desc': 'Capturing the soft light of dawn with delicate brushstrokes, presenting the most tender moments of nature. The mist and rising sun intertwine in the painting, creating a serene and peaceful atmosphere.',
+        'popular.artwork2.title': 'City Pulse',
+        'popular.artwork2.info': 'Artist: Zhang Ya-fang | Acrylic | 150 x 100 cm | 2024',
+        'popular.artwork2.desc': 'Using bold colors and geometric lines to interpret the vitality and rhythm of modern cities. The work blends Eastern and Western aesthetics, showcasing the busyness and pursuits of urban dwellers.',
+        'popular.artwork3.title': 'Tranquil Mountains',
+        'popular.artwork3.info': 'Artist: Chen Zhi-yuan | Ink | 90 x 180 cm | 2023',
+        'popular.artwork3.desc': 'A perfect combination of traditional ink techniques and contemporary aesthetics, depicting the magnificent scenery of Taiwan\'s Central Mountain Range. The blank spaces are just right, allowing viewers to wander between reality and void.',
+        'popular.artwork4.title': 'Time Fragments',
+        'popular.artwork4.info': 'Artist: Lin Shi-han | Mixed Media | 80 x 80 cm | 2024',
+        'popular.artwork4.desc': 'Reassembling fragments of memory, presenting the passage and settling of time through abstract techniques. The layering of materials creates rich depth, inspiring endless imagination.',
+        'all.title': 'All Works',
+        'all.subtitle': 'Browse the complete art collection in the gallery',
+        'footer.copyright': '© 2026 Art Realm Gallery. All rights reserved.',
+        // 所有作品
+        artworks: [
+          { title: 'Morning Light', artist: 'Li Ming-hui', medium: 'Oil', year: '2023' },
+          { title: 'City Pulse', artist: 'Zhang Ya-fang', medium: 'Acrylic', year: '2024' },
+          { title: 'Tranquil Mountains', artist: 'Chen Zhi-yuan', medium: 'Ink', year: '2023' },
+          { title: 'Time Fragments', artist: 'Lin Shi-han', medium: 'Mixed Media', year: '2024' },
+          { title: 'Whispers of the Sea', artist: 'Huang Hai-yun', medium: 'Oil', year: '2024' },
+          { title: 'Metal Memory', artist: 'Wang Jian-guo', medium: 'Sculpture', year: '2023' },
+          { title: 'Blooming Season', artist: 'Zhou Mei-yu', medium: 'Gouache', year: '2024' },
+          { title: 'Prelude to Night', artist: 'Zheng Wen-hao', medium: 'Oil', year: '2023' },
+          { title: 'Abstract Composition', artist: 'Wu Xiu-lan', medium: 'Acrylic', year: '2024' },
+          { title: 'After Rain', artist: 'Zhao Zi-long', medium: 'Watercolor', year: '2023' },
+          { title: 'Traces of Time', artist: 'Sun Ming-yue', medium: 'Photography', year: '2024' },
+          { title: 'Free Flight', artist: 'Liu Xiao-yan', medium: 'Print', year: '2023' }
+        ]
+      }
+    };
+
+    // ========== 初始化變數 ==========
+    var currentLang = 'zh';
+    var pages = {
+      home: document.getElementById('page-home'),
+      popular: document.getElementById('page-popular'),
+      all: document.getElementById('page-all')
+    };
+    var navLinks = document.querySelectorAll('.nav-link');
+    var langToggles = document.querySelectorAll('.lang-toggle');
+
+    // ========== 語言切換功能 ==========
+    function setLanguage(lang) {
+      currentLang = lang;
+      var t = translations[lang];
+      
+      // 更新所有帶有 data-i18n 屬性的元素
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (t[key]) {
+          el.innerHTML = t[key];
+        }
+      });
+
+      // 更新 HTML lang 屬性
+      document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+
+      // 更新語言切換按鈕狀態
+      langToggles.forEach(function(btn) {
+        if (btn.getAttribute('data-lang') === lang) {
+          btn.classList.add('active-lang');
+        } else {
+          btn.classList.remove('active-lang');
+        }
+      });
+
+      // 重新渲染所有作品列表
+      renderAllArtworks();
+    }
+
+    // ========== 渲染所有作品 ==========
+    function renderAllArtworks() {
+      var grid = document.getElementById('all-artworks-grid');
+      var artworks = translations[currentLang].artworks;
+      
+      var html = '';
+      artworks.forEach(function(artwork, index) {
+        html += '<article class="artwork-card overflow-hidden">' +
+          '<div class="aspect-square img-placeholder overflow-hidden">' +
+          '<img src="Image/ARTWORK_' + (index + 1) + '.jpg" alt="' + artwork.title + '" class="w-full h-full object-cover">' + <!-- 新增用來載入圖片的 -->
+          <!-- '<span>' + translations[currentLang]['placeholder.artworkImg'] + ' ' + (index + 1) + '</span>' + --> <!-- 不註解起來就會顯示佔位文字 -->
+          '</div>' +
+          '<div class="p-4">' +
+          '<h3 class="font-serif font-semibold mb-1">' + artwork.title + '</h3>' +
+          '<p class="text-xs" style="color: var(--muted);">' + artwork.artist + ' | ' + artwork.medium + ' | ' + artwork.year + '</p>' +
+          '</div>' +
+          '</article>';
+      });
+      
+      grid.innerHTML = html;
+    }
+
+    // ========== 頁面切換功能 ==========
+    function switchPage(targetPage) {
+      if (!pages[targetPage]) return;
+      
+      // 移除所有頁面的 active 類
+      Object.values(pages).forEach(function(page) {
+        page.classList.remove('active');
+      });
+      
+      // 移除所有導航連結的 active 類和 aria-current
+      navLinks.forEach(function(link) {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+      });
+      
+      // 添加 active 類到目標頁面
+      pages[targetPage].classList.add('active');
+      
+      // 更新導航連結狀態
+      navLinks.forEach(function(link) {
+        if (link.getAttribute('data-page') === targetPage) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+      
+      // 滾動到頁面頂部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ========== 綁定事件 ==========
+    // 導航點擊事件
+    navLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        var targetPage = this.getAttribute('data-page');
+        switchPage(targetPage);
+      });
+      
+      // 鍵盤支援
+      link.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          var targetPage = this.getAttribute('data-page');
+          switchPage(targetPage);
+        }
+      });
+    });
+
+    // 語言切換事件
+    langToggles.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var lang = this.getAttribute('data-lang');
+        setLanguage(lang);
+      });
+    });
+
+    // ========== 初始化 ==========
+    // 渲染所有作品
+    renderAllArtworks();
+
+    // 檢測用戶是否偏好減少動畫
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (prefersReducedMotion.matches) {
+      document.documentElement.style.scrollBehavior = 'auto';
+    }
+  </script>
+</body>
+</html>
